@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Hero() {
   return (
     <main className="min-h-screen">
@@ -15,7 +17,7 @@ export default function Hero() {
             </div>
           </div>
           <div className="pt-5">
-            <a href="/" className="bg-[#181818] hover:bg-[#333] text-white rounded-md cursor-pointer p-3 shadow-xl">Try it Now!</a>
+            <Link to="/editor" className="bg-[#181818] hover:bg-[#333] text-white rounded-md cursor-pointer p-3 shadow-xl">Try it Now!</Link>
           </div>
         </div>
       </section>
