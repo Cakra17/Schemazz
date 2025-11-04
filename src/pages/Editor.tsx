@@ -1,5 +1,8 @@
 import EditorHeader from "@/components/EditorHeader";
-import { Clipboard, Download, LucideArrowLeft, Trash2 } from "lucide-react";
+import AddTableForm from "@/components/AddTableForm";
+import { Background, Controls, Panel, ReactFlow, ReactFlowProvider } from "@xyflow/react";
+import { Clipboard, Download, Trash2 } from "lucide-react";
+import '@xyflow/react/dist/style.css';
 
 export default function Editor() {
   const copy = () => {
@@ -36,11 +39,33 @@ export default function Editor() {
     return;
   }
 
+  const handleResizeStart = (e: React.MouseEvent) => {
+    const startX = e.clientX;
+    const startWidth = parseInt(getComputedStyle(e.currentTarget.parentElement!).getPropertyValue('--panel-width') || '400', 10);
+
+    const onMouseMove = (e: MouseEvent) => {
+      const diff = e.clientX - startX;
+      const newWidth = Math.max(320, Math.min(600, startWidth + diff));
+      document.documentElement.style.setProperty('--panel-width', `${newWidth}px`);
+    };
+
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+
   return (
-    <div>
-      <EditorHeader/>
-      <main className="min-h-screen flex">
-        <aside id="sidepanel" className="relative bg-[#333] transition-all duration-10" style={{ width: 'var(--panel-width, 400px)' }}>
+    <div className="h-screen flex flex-col overflow-hidden">
+      <EditorHeader />
+      <main className="flex-1 flex overflow-hidden">
+        <aside 
+          className="relative bg-[#333] transition-all duration-10 flex flex-col" 
+          style={{ width: 'var(--panel-width, 400px)' }}
+        >
           <div className="flex justify-end p-2 mr-1 gap-3">
             <button 
               className="p-2 bg-indigo-500 rounded-md cursor-pointer flex gap-1 justify-center items-center hover:bg-indigo-700"
@@ -49,7 +74,7 @@ export default function Editor() {
               <span className="text-white jb">Copy</span>
             </button>
             <button 
-              className="p-2 bg-red-500 rounded-md cursor-pointer flex gap-1 justify-center items-center hover:bg-indigo-700"
+              className="p-2 bg-red-500 rounded-md cursor-pointer flex gap-1 justify-center items-center hover:bg-red-700"
               onClick={reset}>
               <Trash2 className="w-5 stroke-white"/>
               <span className="text-white jb">Reset</span>
@@ -64,31 +89,26 @@ export default function Editor() {
           <div>
             <hr className="text-white/40"/>
           </div> 
-          <textarea name="editor" id="editor" className="w-full h-full text-white jb p-2 focus:outline-none"></textarea>
+          <textarea 
+            name="editor" 
+            id="editor" 
+            className="flex-1 w-full resize-none text-white jb p-2 focus:outline-none bg-[#333]"
+          ></textarea>
         </aside>
         <div
-          className="w-1 bg-transparent hover:bg-[#00d9ff] cursor-col-resize transition-colors"
-          onMouseDown={(e) => {
-            const startX = e.clientX;
-            const startWidth = parseInt(getComputedStyle(e.currentTarget.parentElement!).getPropertyValue('--panel-width') || '400', 10);
-
-            const onMouseMove = (e: MouseEvent) => {
-              const diff = e.clientX - startX;
-              const newWidth = Math.max(200, Math.min(600, startWidth + diff));
-              document.documentElement.style.setProperty('--panel-width', `${newWidth}px`);
-            };
-
-            const onMouseUp = () => {
-              document.removeEventListener('mousemove', onMouseMove);
-              document.removeEventListener('mouseup', onMouseUp);
-            };
-
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-          }}
+          className="w-1 bg-transparent hover:bg-[#00d9ff] cursor-col-resize transition-colors flex-none"
+          onMouseDown={handleResizeStart}
         />
-        <section className="overflow-hidden">
-          
+        <section className="flex-1">
+          <ReactFlowProvider>
+            <ReactFlow>
+              <Panel position="top-left">
+                <AddTableForm />
+              </Panel>
+              <Controls />
+              <Background gap={12} size={1} />
+            </ReactFlow>
+          </ReactFlowProvider>
         </section>
       </main>
     </div>

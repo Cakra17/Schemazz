@@ -1,7 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import "./index.css";
 import Home from "./pages/Home";
-import Editor from "./pages/Editor";
+import Editor from "./pages/Editor.tsx";
 
 export function App() {
   return (
