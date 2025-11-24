@@ -1,8 +1,14 @@
 import EditorHeader from "@/components/EditorHeader";
 import AddTableForm from "@/components/AddTableForm";
-import { Background, Controls, Panel, ReactFlow, ReactFlowProvider } from "@xyflow/react";
+import {
+  Background,
+  Controls,
+  Panel,
+  ReactFlow,
+  ReactFlowProvider,
+} from "@xyflow/react";
 import { Clipboard, Download, Trash2 } from "lucide-react";
-import '@xyflow/react/dist/style.css';
+import "@xyflow/react/dist/style.css";
 
 export default function Editor() {
   const copy = () => {
@@ -22,11 +28,14 @@ export default function Editor() {
 
     const filename = Date.now() + ".sql";
 
-    let element = document.createElement('a');
-    element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(editorText.value));
+    let element = document.createElement("a");
+    element.setAttribute(
+      "href",
+      "data:text/plain;charset=utf-8," + encodeURIComponent(editorText.value)
+    );
     element.setAttribute("download", filename);
 
-    element.style.display = 'none';
+    element.style.display = "none";
     document.body.appendChild(element);
 
     element.click();
@@ -37,80 +46,94 @@ export default function Editor() {
     const editorText = document.getElementById("editor") as HTMLTextAreaElement;
     editorText.value = "";
     return;
-  }
+  };
 
   const handleResizeStart = (e: React.MouseEvent) => {
     const startX = e.clientX;
-    const startWidth = parseInt(getComputedStyle(e.currentTarget.parentElement!).getPropertyValue('--panel-width') || '400', 10);
+    const startWidth = parseInt(
+      getComputedStyle(e.currentTarget.parentElement!).getPropertyValue(
+        "--panel-width"
+      ) || "400",
+      10
+    );
 
     const onMouseMove = (e: MouseEvent) => {
       const diff = e.clientX - startX;
       const newWidth = Math.max(320, Math.min(600, startWidth + diff));
-      document.documentElement.style.setProperty('--panel-width', `${newWidth}px`);
+      document.documentElement.style.setProperty(
+        "--panel-width",
+        `${newWidth}px`
+      );
     };
 
     const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("mouseup", onMouseUp);
     };
 
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("mouseup", onMouseUp);
   };
 
   return (
     <div className="h-screen flex flex-col overflow-hidden">
       <EditorHeader />
-      <main className="flex-1 flex overflow-hidden">
-        <aside 
-          className="relative bg-[#333] transition-all duration-10 flex flex-col" 
-          style={{ width: 'var(--panel-width, 400px)' }}
+      <main className="flex-1 flex px-4 pb-4 bg-stone-900 overflow-hidden">
+        <aside
+          className="relative bg-stone-900 pr-1 transition-all duration-10 flex flex-col"
+          style={{ width: "var(--panel-width, 400px)" }}
         >
-          <div className="flex justify-end p-2 mr-1 gap-3">
-            <button 
+          {/* <div className="flex justify-end p-2 mr-1 gap-3">
+            <button
               className="p-2 bg-indigo-500 rounded-md cursor-pointer flex gap-1 justify-center items-center hover:bg-indigo-700"
-              onClick={copy}>
-              <Clipboard className="w-5 stroke-white"/>
+              onClick={copy}
+            >
+              <Clipboard className="w-5 stroke-white" />
               <span className="text-white jb">Copy</span>
             </button>
-            <button 
+            <button
               className="p-2 bg-red-500 rounded-md cursor-pointer flex gap-1 justify-center items-center hover:bg-red-700"
-              onClick={reset}>
-              <Trash2 className="w-5 stroke-white"/>
+              onClick={reset}
+            >
+              <Trash2 className="w-5 stroke-white" />
               <span className="text-white jb">Reset</span>
             </button>
-            <button 
+            <button
               className="p-2 bg-indigo-500 rounded-md cursor-pointer flex gap-1 justify-center items-center hover:bg-indigo-700"
-              onClick={download}>
-              <Download className="w-5 stroke-white"/>
+              onClick={download}
+            >
+              <Download className="w-5 stroke-white" />
               <span className="text-white jb">Download</span>
             </button>
           </div>
           <div>
-            <hr className="text-white/40"/>
-          </div> 
-          <textarea 
-            name="editor" 
-            id="editor" 
-            className="flex-1 w-full resize-none text-white jb p-2 focus:outline-none bg-[#333]"
+            <hr className="text-white/40" />
+          </div> */}
+          <textarea
+            name="editor"
+            id="editor"
+            className="flex-1 w-full resize-none bg-stone-800 text-white font-jb p-2 rounded-2xl focus:outline-none "
           ></textarea>
         </aside>
         <div
-          className="w-1 bg-transparent hover:bg-[#00d9ff] cursor-col-resize transition-colors flex-none"
+          className="w-1 bg-stone-900 hover:bg-[#00d9ff] rounded-full cursor-col-resize transition-colors flex-none"
           onMouseDown={handleResizeStart}
         />
-        <section className="flex-1">
+        <section className="flex-1 relative h-full w-full pl-1 bg-stone-900">
           <ReactFlowProvider>
-            <ReactFlow>
-              <Panel position="top-left">
-                <AddTableForm />
-              </Panel>
-              <Controls />
-              <Background gap={12} size={1} />
-            </ReactFlow>
+            <div className="absolute h-full w-full rounded-2xl overflow-hidden bg-gray-50 z-2">
+              <ReactFlow>
+                <Panel position="top-left">
+                  <AddTableForm />
+                </Panel>
+                <Controls />
+                <Background gap={12} size={1} />
+              </ReactFlow>
+            </div>
           </ReactFlowProvider>
+          <div className=" absolute flex-1 bg-stone-900 h-full w-full z-1"></div>
         </section>
       </main>
     </div>
-  )
+  );
 }
