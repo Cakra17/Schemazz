@@ -11,13 +11,21 @@ export default function Hero() {
             </div>
           </div>
           <div className="pt-1 pb-3">
-            <div className="jb text-gray-500 text-sm md:text-xl tracking-tight">A free, simple tool to draw ER diagrams by just writing SQL queries</div>
-            <div className="jb text-gray-500 text-sm md:text-xl tracking-tight">
+            <div className="font-jb text-gray-500 text-sm md:text-xl tracking-tight">
+              A free, simple tool to draw ER diagrams by just writing SQL
+              queries
+            </div>
+            <div className="font-jb text-gray-500 text-sm md:text-xl tracking-tight">
               Design for developers and data analysts
             </div>
           </div>
           <div className="pt-5">
-            <Link to="/editor" className="bg-[#181818] hover:bg-[#333] text-white rounded-md cursor-pointer p-3 shadow-xl">Try it Now!</Link>
+            <Link
+              to="/editor"
+              className="bg-[#181818] hover:bg-[#333] text-white rounded-md cursor-pointer p-3 shadow-xl"
+            >
+              Try it Now!
+            </Link>
           </div>
         </div>
       </section>
