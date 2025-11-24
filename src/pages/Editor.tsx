@@ -1,10 +1,35 @@
-import EditorHeader from "@/components/EditorHeader";
-import AddTableForm from "@/components/AddTableForm";
 import { Background, Controls, Panel, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import { Clipboard, Download, Trash2 } from "lucide-react";
+import { useState } from "react";
+import type { Editor } from "@/types/editor";
+import EditorHeader from "@/components/EditorHeader";
+import AddTableForm from "@/components/AddTableForm";
+import useFormStore from "@/store/form";
 import '@xyflow/react/dist/style.css';
+import { parseQuery } from "@/lib/parser";
+import { SchemaStore } from "@/store/node-store";
+
+const Value = {
+  text: ""
+}
 
 export default function Editor() {
+  const { isFormOpen, openForm } = useFormStore();
+  const [ value, setValue ] = useState<Editor>(Value);
+  const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = SchemaStore();
+
+  const handleEditorChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTimeout(() => {
+      const { name, value } = event.target;
+      setValue((PrevData) => ({
+        ...PrevData,
+        [name]: value
+      }));
+      // TODO: Parse the text
+      parseQuery(value);
+    }, 1000);
+  };
+
   const copy = () => {
     const editorText = document.getElementById("editor") as HTMLTextAreaElement;
     navigator.clipboard.writeText(editorText.value).then(() => {
@@ -93,6 +118,7 @@ export default function Editor() {
             name="editor" 
             id="editor" 
             className="flex-1 w-full resize-none text-white jb p-2 focus:outline-none bg-[#333]"
+            onChange={handleEditorChange}
           ></textarea>
         </aside>
         <div
@@ -101,13 +127,25 @@ export default function Editor() {
         />
         <section className="flex-1">
           <ReactFlowProvider>
-            <ReactFlow>
+            <ReactFlow
+              nodes={nodes}
+              edges={edges}
+              onNodesChange={onNodesChange}
+              onEdgesChange={onEdgesChange}
+              onConnect={onConnect}
+            >
               <Panel position="top-left">
-                <AddTableForm />
+                <button 
+                  className="p-[6px] bg-indigo-500 text-white jb rounded-md cursor-pointer hover:bg-indigo-700" 
+                  onClick={openForm}
+                  >
+                  Add Table
+                </button>
               </Panel>
               <Controls />
               <Background gap={12} size={1} />
             </ReactFlow>
+            { isFormOpen && <AddTableForm/>}
           </ReactFlowProvider>
         </section>
       </main>
