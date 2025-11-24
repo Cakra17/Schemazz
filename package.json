@@ -9,12 +9,13 @@
     "build": "bun run build.ts"
   },
   "dependencies": {
-    "@xyflow/react": "^12.9.2",
+    "@xyflow/react": "^12.9.3",
     "bun-plugin-tailwind": "^0.0.15",
     "lucide-react": "^0.548.0",
     "react": "^19",
     "react-dom": "^19",
     "react-router-dom": "^7.9.5",
+    "react-tooltip": "^5.30.0",
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
