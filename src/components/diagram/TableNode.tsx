@@ -9,11 +9,12 @@ export default function TableNode({
 	data,
 	selected,
 }: NodeProps<TableNodeType>) {
+	// TODO: Interactive node changes
 	return (
 		<div className="jb min-w-xs max-w-md shadow-lg rounded-2xl overflow-hidden bg-gray-100 dark:bg-stone-800">
 			<TableHeader title={data.tableName} />
 			{data.column.map((column) => (
-				<div className="flex flex-row items-center px-3 py-3 gap-2 text-stone-800 dark:text-gray-100">
+				<div className="flex flex-row items-center px-3 py-3 gap-2 text-stone-800 dark:text-gray-100 hover:dark:bg-stone-700 transition-all">
 					{column.isPK ? (
 						<Key className="text-amber-400" size={16} strokeWidth={3} />
 					) : null}
@@ -57,7 +58,7 @@ function TableHeader({
 		>
 			<input
 				className="outline-none ring-none ring-slate-400 rounded-md py-1 pl-2
-                focus:dark:ring-slate-500 focus:ring-2
+                focus:dark:ring-slate-300 focus:ring-2
                 transition-all duration-150"
 				value={
 					(title.length === 0 ? "" : title.charAt(0).toUpperCase()) +
