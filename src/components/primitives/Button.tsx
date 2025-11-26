@@ -6,11 +6,8 @@ type ButtonVariant =
 	| "link"
 	| "plain";
 
-type Radius = "small" | "medium" | "large" | "full";
-
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 	variant?: ButtonVariant;
-	radius?: Radius;
 	disableEffect?: boolean;
 }
 
@@ -69,18 +66,10 @@ const variantEffect: Record<ButtonVariant, string> = {
         `,
 };
 
-const radiusStyles: Record<Radius, string> = {
-	small: `rounded-md`,
-	medium: `rounded-lg`,
-	large: `rounded-xl`,
-	full: `rounded-full`,
-};
-
 const inactiveStyle = `opacity-80 pointer-event-none`;
 
 export function Button({
 	variant = "primary",
-	radius = "medium",
 	disableEffect = false,
 	className = "",
 	children,
@@ -95,16 +84,10 @@ export function Button({
                 transition duration-150 text-sm
                 active:transition-none
                 hover:cursor-pointer
-                ${radiusStyles[radius]}
-                ${
-									props.disabled
-										? ``
-										: disableEffect
-										? ``
-										: variantEffect[variant]
-								}
+                rounded-lg
+                ${variant === "plain" ? "" : "py-2 px-2.5"}
                 ${props.disabled ? inactiveStyle : ``}
-                
+                ${disableEffect ? "" : variantEffect[variant]}
                 `}
 			{...props}
 		>

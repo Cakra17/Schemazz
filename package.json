@@ -9,6 +9,8 @@
     "build": "bun run build.ts"
   },
   "dependencies": {
+    "@floating-ui/react": "^0.27.16",
+    "@floating-ui/react-dom": "^2.1.6",
     "@xyflow/react": "^12.9.3",
     "bun-plugin-tailwind": "^0.0.15",
     "lucide-react": "^0.548.0",
