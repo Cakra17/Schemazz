@@ -127,4 +127,43 @@ describe('NoobSQLParser - Lexer', () => {
       expect(tokens[15]).toEqual(['SEMICOLON', ';']);
     });
   });
+
+  describe('Comments', () => {
+    test('should handle single-line comments', () => {
+      const parser = new NoobSQLParser();
+      parser.SetSQLText('-- This is a comment\nCREATE TABLE');
+      const tokens = getTokens(parser);
+      
+      expect(tokens[0]).toEqual(['KEYWORD', 'CREATE']);
+      expect(tokens[1]).toEqual(['KEYWORD', 'TABLE']);
+    });
+
+    test('should handle multiple comments', () => {
+      const parser = new NoobSQLParser();
+      parser.SetSQLText('-- Comment 1\nCREATE TABLE\n-- Comment 2');
+      const tokens = getTokens(parser);
+      
+      expect(tokens[0]).toEqual(['KEYWORD', 'CREATE']);
+      expect(tokens[1]).toEqual(['KEYWORD', 'TABLE']);
+    });
+
+    test('should handle comments at end of line', () => {
+      const parser = new NoobSQLParser();
+      parser.SetSQLText('CREATE TABLE users -- user table');
+      const tokens = getTokens(parser);
+      
+      expect(tokens[0]).toEqual(['KEYWORD', 'CREATE']);
+      expect(tokens[1]).toEqual(['KEYWORD', 'TABLE']);
+      expect(tokens[2]).toEqual(['IDENTIFIER', 'users']);
+    });
+
+    test('should handle empty comments', () => {
+      const parser = new NoobSQLParser();
+      parser.SetSQLText('CREATE --\nTABLE');
+      const tokens = getTokens(parser);
+      
+      expect(tokens[0]).toEqual(['KEYWORD', 'CREATE']);
+      expect(tokens[1]).toEqual(['KEYWORD', 'TABLE']);
+    });
+  });
 });

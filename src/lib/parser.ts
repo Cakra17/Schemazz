@@ -1,5 +1,15 @@
 const KEYWORDS = new Set([
-  "CREATE", "TABLE", "PRIMARY", "KEY", "NOT", "NULL", "AUTO_INCREMENT", "FOREIGN", "UNIQUE", "DEFAULT"
+  "CREATE", 
+  "TABLE", 
+  "PRIMARY", 
+  "KEY", 
+  "NOT", 
+  "NULL", 
+  "AUTO_INCREMENT", 
+  "FOREIGN", 
+  "UNIQUE", 
+  "DEFAULT", 
+  "CURRENT_DATE"
 ]);
 
 const DATATYPE = new Set([
@@ -11,7 +21,6 @@ type Token =
   | ["DATATYPE", string]
   | ["IDENTIFIER", string]
   | ["NUMBER", string]
-  | ["COMMENT", string]
   | ["LPAREN", "("]
   | ["RPAREN", ")"]
   | ["COMMA", ","]
@@ -44,6 +53,7 @@ export class NoobSQLParser {
   public SetSQLText(text: string) {
     this.text = text;
     this.lexer(this.text);
+    console.log(this.tokens);
   }
 
   public Parse() {
@@ -53,24 +63,27 @@ export class NoobSQLParser {
       column: []
     };
 
-    this.expectedKeyword("CREATE");
-    this.expectedKeyword("TABLE");
-    const tableName = this.next();
-    if (tableName?.[0] !== "IDENTIFIER") throw new Error("Expected Table Name");
-    temp.tableName = tableName[1];
-
-    if (this.peek()?.[0] !== "LPAREN") throw new Error("Expected (");
-    this.next();
-
-    while (this.peek()?.[0] !== "RPAREN") {
-      temp.column.push(this.parseColumn());
-      if (this.peek()?.[0] === "COMMA") this.next();
-      else if(this.peek()?.[0] !== "RPAREN") throw new Error("Expected , or )");
+    while(this.pos < this.tokens.length) {
+      this.expectedKeyword("CREATE");
+      this.expectedKeyword("TABLE");
+      const tableName = this.next();
+      if (tableName?.[0] !== "IDENTIFIER") throw new Error("Expected Table Name");
+      temp.tableName = tableName[1];
+  
+      if (this.peek()?.[0] !== "LPAREN") throw new Error("Expected (");
+      this.next();
+  
+      while (this.peek()?.[0] !== "RPAREN") {
+        temp.column.push(this.parseColumn());
+        if (this.peek()?.[0] === "COMMA") this.next();
+        else if(this.peek()?.[0] !== "RPAREN") throw new Error("Expected , or )");
+      }
+      this.next();
+      if (this.peek()?.[0] === "SEMICOLON") this.next();
+  
+      this.asts.push(temp);
+      temp = {  tableName: "", column: [] };
     }
-    this.next();
-    if (this.peek()?.[0] === "SEMICOLON") this.next();
-
-    this.asts.push(temp);
     console.log(this.asts);
   }
 
@@ -101,6 +114,10 @@ export class NoobSQLParser {
         this.next();
         break;
       case "BOOLEAN":
+        dataType = datatypePointer[1];
+        this.next();
+        break;
+      case "DATE":
         dataType = datatypePointer[1];
         this.next();
         break;
@@ -138,6 +155,9 @@ export class NoobSQLParser {
             constraint[pos++] = p[1];
           }
           break;
+        case "UNIQUE":
+          constraint[pos++] = p[1];
+          break;
       }
       this.next();
     };
@@ -172,16 +192,44 @@ export class NoobSQLParser {
     return this.next();
   }
 
+
   private lexer(query: string) {
     let tokens: Token[] = [];
     let i = 0;
 
-    const skipWhiteSpace = () => {
-      while(i < query.length && /\s/.test(query[i]!)) i++;
-    };
+    const skipCommentAndWhiteSpaces = () => {
+      let skipped = true;
+      while (skipped && i < query.length) {
+        skipped = false;
+        // whitespace
+        if (/\s/.test(query[i]!)) {
+          i++;
+          skipped = true;
+          continue;
+        }
+
+        // singgle line comment
+        if (query[i] === '-' && query[i+1] === '-') {
+          i += 2;
+          while(i < query.length && query[i] !== "\n") i++;
+          if (i < query.length) i++;
+          skipped = true;
+          continue;
+        }
+
+        // multiline comment
+        if (query[i] === '/' && query[i+1] === '*') {
+          i += 2;
+          while (i + 1 < query.length && (query[i] !== '*' && query[i+1] !== '/')) i++;
+          if (i + 1 < query.length) i += 2;
+          skipped = true;
+          continue;
+        }
+      }
+    }
 
     while(i < query.length) {
-      skipWhiteSpace();
+      skipCommentAndWhiteSpaces();
 
       if (i >= query.length) {
         break;
@@ -222,5 +270,3 @@ export class NoobSQLParser {
     this.tokens = tokens;
   }
 }
-
-let parser = new NoobSQLParser();
