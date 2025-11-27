@@ -87,6 +87,7 @@ export default function EditorHeader() {
 }
 
 function SyncAndHistoryButton() {
+	const [isOpen, setIsOpen] = useState(false);
 	const [cloudSyncing, setCloudSyncing] = useState(false);
 
 	return (
@@ -94,10 +95,11 @@ function SyncAndHistoryButton() {
 			trigger={
 				<Button
 					variant="plain"
-					className="p-2"
+					className={`p-2`}
 					id="sync-button"
 					data-tooltip-id="sync-button"
 					data-tooltip-place="bottom"
+					isActive={isOpen}
 				>
 					{cloudSyncing ? (
 						<Loader size={20} className="animate-[spin_2s_linear_infinite]" />
@@ -106,6 +108,7 @@ function SyncAndHistoryButton() {
 					)}
 				</Button>
 			}
+			onOpenCallback={setIsOpen}
 		>
 			<div className="flex flex-col gap-2 text-sm p-6">
 				<h1 className="font-bold">
@@ -135,6 +138,7 @@ type ShareMode = "Restricted" | "Password Protected" | "Public";
 type SharerRole = "Viewer" | "Editor";
 
 function ShareButton() {
+	const [isOpen, setIsOpen] = useState(false);
 	const [savingShareSetting, setSavingShareSetting] = useState(false);
 	const [shareMode, setShareMode] = useState<ShareMode>("Restricted");
 	const [sharerRole, setSharerRole] = useState<SharerRole>("Viewer");
@@ -153,11 +157,17 @@ function ShareButton() {
 	return (
 		<AdvancedPopover
 			trigger={
-				<Button variant="secondary" id="share-button" className="h-[36]">
+				<Button
+					variant="secondary"
+					id="share-button"
+					className="h-[36]"
+					isActive={isOpen}
+				>
 					<Share2 size={20} />
 					Share
 				</Button>
 			}
+			onOpenCallback={setIsOpen}
 		>
 			<div className="flex flex-col gap-2 p-6">
 				<div className="flex flex-col gap-4">
@@ -234,7 +244,9 @@ function ShareButton() {
 									/>
 								</ListMenu>
 							</AdvancedPopover>
-							<p className="text-xs px-1.5">{shareModeDesc[shareMode]}</p>
+							<p className="text-xs px-1.5 opacity-80">
+								{shareModeDesc[shareMode]}
+							</p>
 						</div>
 						<div className="w-[16]" />
 

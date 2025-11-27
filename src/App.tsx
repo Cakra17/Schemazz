@@ -1,5 +1,6 @@
 import { Route, Routes } from "react-router-dom";
 import "./index.css";
+import "./react_flow.css";
 import Home from "./pages/Home";
 import EditorPage from "./pages/Editor.tsx";
 import Playground from "./pages/Playground.tsx";

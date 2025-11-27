@@ -2,95 +2,18 @@ import EditorHeader from "@/components/EditorHeader";
 import AddTableForm from "@/components/AddTableForm";
 import {
 	Background,
+	ConnectionMode,
 	Controls,
 	Panel,
 	ReactFlow,
 	ReactFlowProvider,
+	type Edge,
 } from "@xyflow/react";
 import { Clipboard, Download, Trash2 } from "lucide-react";
 import "@xyflow/react/dist/style.css";
 import TableNode from "@/components/diagram/TableNode";
-import type { TableNodeType } from "@/components/diagram/types";
-
-const nodeTypes = {
-	table: TableNode,
-};
-
-const defaultNodes: TableNodeType[] = [
-	{
-		id: "node-1",
-		type: "table",
-		position: { x: 300, y: 300 },
-		data: {
-			tableName: "users",
-			column: [
-				{
-					id: "node-1_col-1",
-					name: "id",
-					type: "UUID",
-					isPK: true,
-				},
-				{
-					id: "node-1_col-2",
-					name: "email",
-					type: "VARCHAR(320)",
-				},
-				{
-					id: "node-1_col-3",
-					name: "username",
-					type: "VARCHAR(30)",
-				},
-				{
-					id: "node-1_col-4",
-					name: "password_hash",
-					type: "VARCHAR(64)",
-				},
-				{
-					id: "node-1_col-5",
-					name: "created_at",
-					type: "TIMESTAMP",
-				},
-			],
-		},
-	},
-	{
-		id: "node-2",
-		type: "table",
-		position: { x: 800, y: 200 },
-		data: {
-			tableName: "posts",
-			column: [
-				{
-					id: "node-2_col-1",
-					name: "id",
-					type: "UUID",
-					isPK: true,
-				},
-				{
-					id: "node-2_col-2",
-					name: "title",
-					type: "VARCHAR(60)",
-				},
-				{
-					id: "node-2_col-3",
-					name: "username",
-					type: "TEXT",
-				},
-				{
-					id: "node-2_col-4",
-					name: "user_id",
-					type: "UUID",
-					isFK: true,
-				},
-				{
-					id: "node-2_col-5",
-					name: "created_at",
-					type: "TIMESTAMP",
-				},
-			],
-		},
-	},
-];
+import type { TableNodeType } from "@/components/diagram/NodeType";
+import ReactFlowDiagram from "@/components/ReactFlowDiagram";
 
 export default function Editor() {
 	const copy = () => {
@@ -201,23 +124,8 @@ export default function Editor() {
 					className="w-1 bg-stone-900 hover:bg-[#00d9ff] rounded-full cursor-col-resize transition-colors flex-none"
 					onMouseDown={handleResizeStart}
 				/>
-				<section className="flex-1 relative h-full w-full pl-1 bg-stone-900">
-					<ReactFlowProvider>
-						<div className="absolute h-full w-full rounded-2xl overflow-hidden bg-gray-50 z-2">
-							<ReactFlow
-								colorMode="dark"
-								className="dark"
-								nodeTypes={nodeTypes}
-								nodes={defaultNodes}
-							>
-								<Panel position="top-left">
-									<AddTableForm />
-								</Panel>
-								<Controls />
-								<Background gap={12} size={1} />
-							</ReactFlow>
-						</div>
-					</ReactFlowProvider>
+				<section className="flex-1 relative h-full w-full pl-1 bg-stone-900 ">
+					<ReactFlowDiagram />
 					<div className=" absolute flex-1 bg-stone-900 h-full w-full z-1"></div>
 				</section>
 			</main>

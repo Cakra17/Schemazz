@@ -1,4 +1,9 @@
-import React, { useState, cloneElement, isValidElement } from "react";
+import React, {
+	useState,
+	cloneElement,
+	isValidElement,
+	useEffect,
+} from "react";
 import {
 	useFloating,
 	offset,
@@ -9,6 +14,7 @@ import {
 	useDismiss,
 	useInteractions,
 	type AutoUpdateOptions,
+	type Placement,
 } from "@floating-ui/react";
 
 interface AdvancedPopoverProps {
@@ -16,17 +22,25 @@ interface AdvancedPopoverProps {
 	children: React.ReactNode;
 	// The button/element that triggers the popover
 	trigger: React.ReactNode;
+	placement?: Placement;
 	className?: string;
 	shouldAutoUpdate?: boolean;
+	onOpenCallback?: (isOpen: boolean) => void;
 }
 
 export function AdvancedPopover({
 	children,
 	trigger,
+	placement = "bottom",
 	className = "",
 	shouldAutoUpdate = false,
+	onOpenCallback = () => {},
 }: AdvancedPopoverProps) {
 	const [isOpen, setIsOpen] = useState(false);
+
+	useEffect(() => {
+		onOpenCallback(isOpen);
+	}, [isOpen]);
 
 	const updateOption: AutoUpdateOptions = {
 		ancestorScroll: shouldAutoUpdate,
@@ -39,7 +53,7 @@ export function AdvancedPopover({
 	const { refs, floatingStyles, context } = useFloating({
 		open: isOpen,
 		onOpenChange: setIsOpen,
-		placement: "bottom",
+		placement: placement,
 		middleware: [offset(10), flip(), shift()],
 		whileElementsMounted: (refEl, floatEl, update) =>
 			autoUpdate(refEl, floatEl, update, updateOption),

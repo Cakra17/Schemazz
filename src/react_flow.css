@@ -1,0 +1,25 @@
+.dark .react-flow__background {
+	background: oklch(24.354% 0.00003 271.152);
+	color: oklch(96.7% 0.001 286.375);
+}
+
+.light .react-flow__background {
+	background: oklch(92% 0.004 286.32);
+	color: oklch(27.4% 0.006 286.033);
+}
+
+.light .react-flow__node {
+	background: transparent;
+	border-radius: 0;
+}
+
+.dark .react-flow__node {
+	background: transparent;
+	border-radius: 0;
+}
+
+.dark .react-flow__edge {
+	--xy-edge-stroke-width-default: 1.5;
+	--xy-edge-stroke-default: oklch(70.9% 0.01 56.259);
+	--xy-edge-stroke-selected-default: oklch(97% 0.001 106.424);
+}
