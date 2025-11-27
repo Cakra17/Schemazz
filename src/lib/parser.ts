@@ -9,7 +9,8 @@ const KEYWORDS = new Set([
   "FOREIGN", 
   "UNIQUE", 
   "DEFAULT", 
-  "CURRENT_DATE"
+  "CURRENT_DATE",
+  "REFERENCES",
 ]);
 
 const DATATYPE = new Set([
@@ -32,9 +33,20 @@ interface Column {
   constraint: string[];
 }
 
+interface RelationDetail {
+  columnName: string;
+  tableName: string;
+}
+
+interface Relation {
+  from: RelationDetail,
+  to: RelationDetail,
+}
+
 interface AST {
   tableName: string
   column: Column[]
+  relation: Record<string, Relation>[],
 };
 
 export class NoobSQLParser {
@@ -60,7 +72,8 @@ export class NoobSQLParser {
     this.pos = 0;
     let temp: AST = {
       tableName: "",
-      column: []
+      column: [],
+      relation: [],
     };
 
     while(this.pos < this.tokens.length) {
@@ -74,7 +87,8 @@ export class NoobSQLParser {
       this.next();
   
       while (this.peek()?.[0] !== "RPAREN") {
-        temp.column.push(this.parseColumn());
+        if (this.peek()?.[1] === "FOREIGN") temp.relation.push(this.parseRelation(temp.tableName));
+        else temp.column.push(this.parseColumn());
         if (this.peek()?.[0] === "COMMA") this.next();
         else if(this.peek()?.[0] !== "RPAREN") throw new Error("Expected , or )");
       }
@@ -82,7 +96,7 @@ export class NoobSQLParser {
       if (this.peek()?.[0] === "SEMICOLON") this.next();
   
       this.asts.push(temp);
-      temp = {  tableName: "", column: [] };
+      temp = {  tableName: "", column: [], relation: [] };
     }
     console.log(this.asts);
   }
@@ -91,6 +105,7 @@ export class NoobSQLParser {
     let columnName: string = "";
     let constraint: string[] = [];
     let dataType: string = "";
+    let skipped = false;
 
     const namePointer = this.peek();
     if (namePointer?.[0] !== "IDENTIFIER") throw new Error("Invalid Column Name");
@@ -123,41 +138,20 @@ export class NoobSQLParser {
         break;
     }
 
-    let pos = 0;
-    while(this.peek()?.[0] !== "COMMA") {
+    while(!skipped && this.peek()?.[0] !== "COMMA" && this.peek()?.[0] !== "RPAREN") {
       const p = this.peek();
       if (p?.[0] !== "KEYWORD") {
         throw new Error("Invalid Constraint");
       }
-      switch (p[1]) {
-        case "PRIMARY":
-          if (constraint[pos] !== "KEY" && constraint[pos] !== "NOT") {
-            constraint[pos++] = p[1];
-          }
-          break;
-        case "KEY":
-          if (constraint[pos] !== "NOT") {
-            constraint[pos++] = p[1];
-          }
-          break;
-        case "NOT":
-          if (constraint[pos] !== "NULL") {
-            constraint[pos++] = p[1];
-          }
-          break;
-        case "NULL": 
-          if (constraint[pos] !== "PRIMARY") {
-            constraint[pos++] = p[1];
-          }
-          break;
-        case "AUTO_INCREMENT":
-          if (constraint[pos] !== "PRIMARY" && constraint[pos] !== "NOT" ) {
-            constraint[pos++] = p[1];
-          }
-          break;
-        case "UNIQUE":
-          constraint[pos++] = p[1];
-          break;
+      
+      if (p[1] === "PRIMARY" && this.tokens[this.pos+1]?.[1] === "KEY") {
+        constraint.push("PRIMARY KEY");
+        this.next();
+      } else if (p[1] === "NOT" && this.tokens[this.pos+1]?.[1] === "NULL") {
+        constraint.push("NOT NULL");
+        this.next();
+      } else {
+        constraint.push(p[1]);
       }
       this.next();
     };
@@ -166,6 +160,51 @@ export class NoobSQLParser {
       dataType: dataType,
       constraint: constraint,
     }
+  }
+
+  private parseRelation(tableName: string): Record<string, Relation> {
+    let temp: Relation = {
+      from: {
+        columnName: "",
+        tableName: tableName
+      },
+      to: {
+        columnName: "",
+        tableName: ""
+      }
+    }
+
+    this.expectedKeyword("FOREIGN");
+    this.expectedKeyword("KEY");
+
+    if (this.peek()?.[0] !== "LPAREN") throw new Error("Expected (");
+    this.next();
+
+    if (this.peek()?.[0] !== "IDENTIFIER") throw new Error("Expected column name in FK");
+    temp.from.columnName = this.peek()?.[1]!;
+    this.next();
+
+    if (this.peek()?.[0] !== "RPAREN") throw new Error("Expected )");
+    this.next();
+
+    this.expectedKeyword("REFERENCES");
+
+    if (this.peek()?.[0] !== "IDENTIFIER") throw new Error("Expected target table name");
+    temp.to.tableName = this.peek()?.[1]!;
+    this.next();
+
+    if (this.peek()?.[0] !== "LPAREN") throw new Error("Expected (");
+    this.next();
+
+    if (this.peek()?.[0] !== "IDENTIFIER") throw new Error("Expected referenced table");
+    temp.to.columnName = this.peek()?.[1]!;
+    this.next();
+
+    if (this.peek()?.[0] !== "RPAREN") throw new Error("Expected )");
+    this.next();
+
+    const relationKey = `fk_${temp.from.tableName}_${temp.to.tableName}`;
+    return {[`${relationKey}`]: temp};
   }
 
   private peek() {
@@ -263,7 +302,7 @@ export class NoobSQLParser {
       } else if (DATATYPE.has(upper)) {
         tokens.push(["DATATYPE", upper]);
       } else {
-        tokens.push(["IDENTIFIER", word]);
+        tokens.push(["IDENTIFIER", word.toLowerCase()]);
       }
     }
 
