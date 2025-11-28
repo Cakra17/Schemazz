@@ -1,3 +1,3 @@
-export interface Editor {
-  text: string;
+export interface TextArea {
+  editor: string;
 }

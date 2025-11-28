@@ -1,33 +1,31 @@
 import { Background, Controls, Panel, ReactFlow, ReactFlowProvider } from "@xyflow/react";
 import { Clipboard, Download, Trash2 } from "lucide-react";
 import { useState } from "react";
-import type { Editor } from "@/types/editor";
+import type { TextArea } from "@/types/editor";
 import EditorHeader from "@/components/EditorHeader";
 import AddTableForm from "@/components/AddTableForm";
 import useFormStore from "@/store/form";
 import '@xyflow/react/dist/style.css';
-import { parseQuery } from "@/lib/parser";
+import { NoobSQLParser } from "@/lib/parser";
 import { SchemaStore } from "@/store/node-store";
 
 const Value = {
-  text: ""
+  editor: ""
 }
 
 export default function Editor() {
   const { isFormOpen, openForm } = useFormStore();
-  const [ value, setValue ] = useState<Editor>(Value);
+  const [ data, setData ] = useState<TextArea>(Value);
   const { nodes, edges, onNodesChange, onEdgesChange, onConnect } = SchemaStore();
+  const parser = new NoobSQLParser();
 
   const handleEditorChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTimeout(() => {
-      const { name, value } = event.target;
-      setValue((PrevData) => ({
-        ...PrevData,
-        [name]: value
-      }));
-      // TODO: Parse the text
-      parseQuery(value);
-    }, 1000);
+    const { name, value } = event.target;
+    setData((PrevData) => ({
+      ...PrevData,
+      [name]: value
+    }));
+    
   };
 
   const copy = () => {
@@ -118,7 +116,7 @@ export default function Editor() {
             name="editor" 
             id="editor" 
             className="flex-1 w-full resize-none text-white jb p-2 focus:outline-none bg-[#333]"
-            onChange={handleEditorChange}
+            onBlur={handleEditorChange}
           ></textarea>
         </aside>
         <div
