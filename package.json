@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "bun --hot src/index.html",
     "start": "NODE_ENV=production bun src/main.tsx",
-    "build": "bun run build.ts"
+    "build": "bun run build.ts",
+    "unit-test": "bun test src/test/*.test.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",
@@ -18,7 +19,8 @@
     "react-dom": "^19",
     "react-router-dom": "^7.9.5",
     "react-tooltip": "^5.30.0",
-    "tailwindcss": "^4.1.11"
+    "tailwindcss": "^4.1.11",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@types/react": "^19",
