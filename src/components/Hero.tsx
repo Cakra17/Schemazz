@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
+import hero from "public/images/hero.png";
 
 export default function Hero() {
 	return (
 		<main className="min-h-screen jb">
-			<section className="max-w-7xl py-16 md:py-24 mx-auto">
+			<section className="max-w-7xl py-4 mx-auto">
 				<div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
 					<div className="py-4">
 						<div className="Ejb font-bold md:text-4xl text-3xl tracking-tight">
@@ -28,6 +29,9 @@ export default function Hero() {
 						</Link>
 					</div>
 				</div>
+			</section>
+			<section className="max-2-lg md:max-w-7xl mx-auto py-4">
+				<img src={hero} alt="example" className="rounded-lg shadow-xl"/>
 			</section>
 		</main>
 	);
