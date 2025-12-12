@@ -1,3 +1,5 @@
+import type { Column } from "@/types/column";
+import type { Position, Table } from "@/types/node";
 import { 
   addEdge, 
   applyEdgeChanges, 
@@ -11,37 +13,7 @@ import {
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-export enum ColumnType {
-  VARCHAR = "VARCHAR",
-  TEXT = "TEXT",
-  INTEGER = "INTEGER",
-  FLOAT = "FLOAT",
-  DATE = "DATE",
-  DATETIME = "DATETIME",
-  UUID = "UUID"
-}
-
-export interface Column {
-  id: string
-  name: string;
-  primarykey: boolean;
-  unique: boolean;
-  null: boolean;
-  type: ColumnType;
-  defaultValue?: string;
-}
-
-export interface Table {
-  name: string;
-  columns: Column[];
-}
-
-export interface Position {
-  x: number;
-  y: number;
-}
-
-interface NNode extends Node {
+export interface NNode extends Node {
   data: {
     table: Table;
     label: string;
@@ -54,7 +26,8 @@ export interface SchemaState {
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
-  addTable: (table: Table, pos: Position) => void;
+  addTable: (table: Table, pos: Position, type: string) => void;
+  addEdge: (edge: Edge) => void;
   updateTable: (tableId: string, table: Table) => void;
   deleteTable: (tableId: string) => void;
   addColumn: (tableId: string, column: Column) => void;
@@ -79,11 +52,12 @@ export const SchemaStore = create<SchemaState>()(
       onConnect: (connection: Connection) => {
         set({ edges: addEdge(connection, get().edges) });
       },
-      addTable: (table: Table, pos: Position) => {
+      addTable: (table: Table, pos: Position, type: string) => {
         set((state) => {
           const newNode: NNode = {
-            id: `table-${Date.now()}`,
+            id: `table-${table.name}`,
             position: pos,
+            type: type,
             data: {
               table: table,
               label: `${table.name}`
@@ -91,6 +65,12 @@ export const SchemaStore = create<SchemaState>()(
           };
           const newNodes = [...state.nodes, newNode];
           return {nodes: newNodes};
+        });
+      },
+      addEdge: (edge: Edge) => {
+        set((state) => {
+          const newEdges = [...state.edges, edge];
+          return {edges: newEdges};
         });
       },
       setNodes: (nodes: NNode[]) => {

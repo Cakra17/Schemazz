@@ -1,3 +1,6 @@
+import type { Column } from "@/types/column";
+import type { AST, Relation, Token} from "@/types/parser"
+
 const KEYWORDS = new Set([
   "CREATE", 
   "TABLE", 
@@ -17,38 +20,6 @@ const DATATYPE = new Set([
   "INT", "VARCHAR", "TEXT", "BOOLEAN", "DATE"
 ]);
 
-type Token = 
-  | ["KEYWORD", string]
-  | ["DATATYPE", string]
-  | ["IDENTIFIER", string]
-  | ["NUMBER", string]
-  | ["LPAREN", "("]
-  | ["RPAREN", ")"]
-  | ["COMMA", ","]
-  | ["SEMICOLON", ";"];
-
-interface Column {
-  name: string;
-  dataType: string;
-  constraint: string[];
-}
-
-interface RelationDetail {
-  columnName: string;
-  tableName: string;
-}
-
-interface Relation {
-  from: RelationDetail,
-  to: RelationDetail,
-}
-
-interface AST {
-  tableName: string
-  column: Column[]
-  relation: Record<string, Relation>[],
-};
-
 export class NoobSQLParser {
   private text: string;
   private tokens: Token[];
@@ -65,7 +36,10 @@ export class NoobSQLParser {
   public SetSQLText(text: string) {
     this.text = text;
     this.lexer(this.text);
-    console.log(this.tokens);
+  }
+
+  public GetAST(): AST[] {
+    return this.asts;
   }
 
   public Parse() {
@@ -76,6 +50,7 @@ export class NoobSQLParser {
       relation: [],
     };
 
+    let count = 1;
     while(this.pos < this.tokens.length) {
       this.expectedKeyword("CREATE");
       this.expectedKeyword("TABLE");
@@ -88,7 +63,7 @@ export class NoobSQLParser {
   
       while (this.peek()?.[0] !== "RPAREN") {
         if (this.peek()?.[1] === "FOREIGN") temp.relation.push(this.parseRelation(temp.tableName));
-        else temp.column.push(this.parseColumn());
+        else temp.column.push(this.parseColumn(temp.tableName, count)); count++;
         if (this.peek()?.[0] === "COMMA") this.next();
         else if(this.peek()?.[0] !== "RPAREN") throw new Error("Expected , or )");
       }
@@ -97,19 +72,25 @@ export class NoobSQLParser {
   
       this.asts.push(temp);
       temp = {  tableName: "", column: [], relation: [] };
+      count = 1;
     }
-    console.log(this.asts);
   }
 
-  private parseColumn(): Column {
-    let columnName: string = "";
-    let constraint: string[] = [];
-    let dataType: string = "";
+  private parseColumn(tbName: string, num: number): Column {
+    let col: Column = {
+      id: `${tbName}-${num}`,
+      name: "",
+      nullable: false,
+      type: "",
+      unique: false,
+      isFK: false,
+      isPK: false
+    }
     let skipped = false;
 
     const namePointer = this.peek();
     if (namePointer?.[0] !== "IDENTIFIER") throw new Error("Invalid Column Name");
-    columnName = namePointer?.[1];
+    col.name = namePointer?.[1];
     this.next();
 
     const datatypePointer = this.peek();
@@ -117,23 +98,23 @@ export class NoobSQLParser {
     switch (datatypePointer[1]) {
       case "VARCHAR":
         this.pos += 2
-        dataType = `${datatypePointer[1]}(${this.peek()?.[1]})`;
+        col.type = `${datatypePointer[1]}(${this.peek()?.[1]})`;
         this.pos += 2;
         break;
       case "INT":
-        dataType = datatypePointer[1];
+        col.type = datatypePointer[1];
         this.next();
         break;
       case "TEXT":
-        dataType = datatypePointer[1];
+        col.type = datatypePointer[1];
         this.next();
         break;
       case "BOOLEAN":
-        dataType = datatypePointer[1];
+        col.type = datatypePointer[1];
         this.next();
         break;
       case "DATE":
-        dataType = datatypePointer[1];
+        col.type = datatypePointer[1];
         this.next();
         break;
     }
@@ -145,24 +126,22 @@ export class NoobSQLParser {
       }
       
       if (p[1] === "PRIMARY" && this.tokens[this.pos+1]?.[1] === "KEY") {
-        constraint.push("PRIMARY KEY");
+        col.isPK = true;
         this.next();
       } else if (p[1] === "NOT" && this.tokens[this.pos+1]?.[1] === "NULL") {
-        constraint.push("NOT NULL");
+        col.nullable = false;
         this.next();
-      } else {
-        constraint.push(p[1]);
+      } else if (p[1] === "NULL" && this.tokens[this.pos-1]?.[1] !== "NOT") {
+        col.nullable = true;
+      } else if (p[1] === "UNIQUE") {
+        col.unique = true;
       }
       this.next();
     };
-    return {
-      name: columnName,
-      dataType: dataType,
-      constraint: constraint,
-    }
+    return col;
   }
 
-  private parseRelation(tableName: string): Record<string, Relation> {
+  private parseRelation(tableName: string): Relation {
     let temp: Relation = {
       from: {
         columnName: "",
@@ -203,8 +182,7 @@ export class NoobSQLParser {
     if (this.peek()?.[0] !== "RPAREN") throw new Error("Expected )");
     this.next();
 
-    const relationKey = `fk_${temp.from.tableName}_${temp.to.tableName}`;
-    return {[`${relationKey}`]: temp};
+    return temp;
   }
 
   private peek() {
