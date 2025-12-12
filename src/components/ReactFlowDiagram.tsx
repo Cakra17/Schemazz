@@ -5,13 +5,12 @@ import {
 	Panel,
 	ReactFlow,
 	ReactFlowProvider,
-	useNodesState,
 	type Edge,
 } from "@xyflow/react";
-import AddTableForm from "./AddTableForm";
 import type { TableNodeType } from "./diagram/NodeType";
 import TableNode, { defaultColorSelection } from "./diagram/TableNode";
-import { useCallback } from "react";
+import { SchemaStore } from "@/store/node-store";
+import { Button } from "./primitives/Button";
 
 const nodeTypes = {
 	table: TableNode,
@@ -108,7 +107,8 @@ const defaultEdges: Edge[] = [
 ];
 
 export default function ReactFlowDiagram() {
-	const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
+	// const [nodes, setNodes, onNodesChange] = useNodesState(defaultNodes);
+	const { nodes, edges, onNodesChange, onEdgesChange, resetSchema } = SchemaStore();
 
 	return (
 		<ReactFlowProvider>
@@ -118,12 +118,15 @@ export default function ReactFlowDiagram() {
 					className=" dark:border-1 dark:border-neutral-600 rounded-2xl"
 					nodeTypes={nodeTypes}
 					nodes={nodes}
+					edges={edges}
 					onNodesChange={onNodesChange}
-					edges={defaultEdges}
+					onEdgesChange={onEdgesChange}
 					connectionMode={ConnectionMode.Loose}
 				>
 					<Panel position="top-left">
-						<AddTableForm />
+						<Button variant="danger" className="text-[1rem]" onClick={resetSchema}> 
+							Reset
+						</Button>
 					</Panel>
 					<Controls />
 					<Background gap={12} size={1} />

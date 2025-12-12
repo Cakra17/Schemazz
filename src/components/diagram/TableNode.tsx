@@ -7,12 +7,14 @@ import { AdvancedPopover } from "../primitives/Popover";
 import { ListMenu, ListMenuItem } from "../primitives/Menu";
 import VR from "../primitives/VerticalDivider";
 import { isValidHex } from "@/utils/hex_parser";
+import type { NNode } from "@/store/node-store";
+import type { Table } from "@/types/node";
 
 export default function TableNode({
 	id,
 	data,
 	selected,
-}: NodeProps<TableNodeType>) {
+}: NodeProps<NNode>) {
 	const { setNodes } = useReactFlow();
 
 	const handleCostumizeButton = useCallback(() => {
@@ -38,8 +40,8 @@ export default function TableNode({
 	// TODO: Interactive node changes
 	return (
 		<div className="jb min-w-xs max-w-md shadow-lg rounded-2xl overflow-hidden bg-gray-100 dark:bg-stone-800 dark:border dark:border-neutral-600">
-			<TableHeader id={id} data={data} onClick={handleCostumizeButton} />
-			{data.column.map((column) => (
+			<TableHeader id={id} data={data.table} onClick={handleCostumizeButton} />
+			{data.table.columns.map((column) => (
 				<div className="relative flex flex-row items-center px-3 py-3 gap-2 text-stone-800 dark:text-gray-100 hover:dark:bg-stone-700 transition-all">
 					<Handle
 						type="target"
@@ -83,7 +85,7 @@ function TableHeader({
 	onClick = () => {},
 }: {
 	id: string;
-	data: TableNodeData;
+	data: Table;
 	onTitleChange?: () => void;
 	onClick?: () => void; // Handle costumize button callback through react flow
 }) {
@@ -128,10 +130,10 @@ function TableHeader({
                 focus:dark:ring-slate-300 focus:ring-2
                 transition-all duration-150"
 				value={
-					(data.tableName.length === 0
+					(data.name.length === 0
 						? ""
-						: data.tableName.charAt(0).toUpperCase()) +
-					(data.tableName.length < 2 ? "" : data.tableName.slice(1))
+						: data.name.charAt(0).toUpperCase()) +
+					(data.name.length < 2 ? "" : data.name.slice(1))
 				}
 			></input>
 			<AdvancedPopover
