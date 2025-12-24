@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 import { editor } from "monaco-editor";
 import { Editor, type OnChange, type OnMount } from "@monaco-editor/react";
 import { NoobSQLParser } from "@/lib/parser";
@@ -6,10 +6,12 @@ import { SchemaStore } from "@/store/node-store";
 import type { Position, Table } from "@/types/node";
 import { defaultColorSelection } from "./diagram/TableNode";
 import type { Edge } from "@xyflow/react";
+import { FileStore } from "@/store/file-store";
 
 export default function CustomEditor() {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const { addTable, addEdge, resetSchema } = SchemaStore();
+  const { text } = FileStore();
 	const parser = new NoobSQLParser();
 
 	const handleSql: OnChange = (value, event) => {
@@ -85,9 +87,14 @@ export default function CustomEditor() {
 
   const handleEditorMount: OnMount = (editor, monaco) => {
     editorRef.current = editor;
-
     editor.focus();
   };
+
+  useEffect(() => {
+    if (editorRef.current && text) {
+      editorRef.current.setValue(text);
+    }
+  }, [text]);
 
   return (
     <>
@@ -95,6 +102,7 @@ export default function CustomEditor() {
         theme="vs-dark"
         defaultLanguage="sql"
         className="w-full rounded-2xl"
+        value={text}
         onMount={handleEditorMount}
         onChange={handleSql}
         options={{
