@@ -12,9 +12,11 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.16",
     "@floating-ui/react-dom": "^2.1.6",
+    "@monaco-editor/react": "^4.7.0",
     "@xyflow/react": "^12.9.3",
     "bun-plugin-tailwind": "^0.0.15",
     "lucide-react": "^0.548.0",
+    "monaco-editor": "^0.55.1",
     "react": "^19",
     "react-dom": "^19",
     "react-router-dom": "^7.9.5",
