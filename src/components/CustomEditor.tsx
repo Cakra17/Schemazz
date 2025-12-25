@@ -102,7 +102,7 @@ export default function CustomEditor() {
         theme="vs-dark"
         defaultLanguage="sql"
         className="w-full rounded-2xl"
-        value={text}
+        defaultValue={text}
         onMount={handleEditorMount}
         onChange={handleSql}
         options={{

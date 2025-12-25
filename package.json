@@ -15,6 +15,7 @@
     "@monaco-editor/react": "^4.7.0",
     "@xyflow/react": "^12.9.3",
     "bun-plugin-tailwind": "^0.0.15",
+    "html-to-image": "1.11.11",
     "lucide-react": "^0.548.0",
     "monaco-editor": "^0.55.1",
     "react": "^19",

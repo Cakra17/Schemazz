@@ -14,17 +14,20 @@ import {
   Share2,
 } from "lucide-react";
 import { Button } from "./primitives/Button";
-import React, { useRef, useState, type MouseEventHandler } from "react";
+import React, { useRef, useState } from "react";
 import Avatar from "./primitives/Avatar";
 import Logo from "./Logo";
 import { AdvancedPopover } from "./primitives/Popover";
 import { ListMenu, ListMenuItem } from "./primitives/Menu";
 import FileInput from "./primitives/FileInput";
 import { FileStore } from "@/store/file-store";
+import { getViewportForBounds, useReactFlow } from "@xyflow/react";
+import { toPng } from "html-to-image";
 
 export default function EditorHeader() {
   const fileUploadRef = useRef<HTMLInputElement>(null);
   const { setText, setFile } = FileStore();
+  const { getNodes, getNodesBounds } = useReactFlow();
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target?.files![0];
     if (!file) return;
@@ -39,12 +42,43 @@ export default function EditorHeader() {
 
     reader.readAsText(file);
   };
+
   const handleClick = () => {
     fileUploadRef.current?.click();
   };
+ 
+  const downloadImage = (dataUrl: string) => {
+    const a = document.createElement("a");
+
+    a.setAttribute("download", "schemazz.png");
+    a.setAttribute("href", dataUrl);
+    a.click()
+  };
+
+  // TODO: add loading for better ux
+  const handleDownload = async () => {
+    const width = 1024;
+    const height = 768;
+    const nodeBounds = getNodesBounds(getNodes());
+    const viewport = getViewportForBounds(nodeBounds, width, height, 0.5, 4, 1);
+
+    const dataUrl = await toPng(document.querySelector('.react-flow__viewport') as HTMLElement, {
+      backgroundColor: '#1e1e1e',
+      width: width,
+      height: height,
+      cacheBust: true,
+      pixelRatio: 1,
+      style: {
+        width: width.toString(),
+        height: height.toString(),
+        transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`
+      }
+    });
+    downloadImage(dataUrl);
+  };
+
   return (
     <div className="dark jb">
-      <></>
       <header className="relative z-100 bg-stone-900 border-b border-white/1 backdrop-blur-md">
         <div className="flex h-14 items-center justify-between mx-auto px-4 text-white sm:px-6 lg:px-4">
           <div className="flex h-full py-2 flex-row items-center gap-2">
@@ -66,7 +100,7 @@ export default function EditorHeader() {
               <FolderUp size={20} />
               Import
             </FileInput>
-            <Button variant="secondary" className="h-[36]">
+            <Button variant="secondary" className="h-[36]" onClick={handleDownload}>
               <FolderDown size={20} />
               Export
             </Button>
