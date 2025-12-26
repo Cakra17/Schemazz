@@ -7,7 +7,7 @@
     "dev": "bun --hot src/index.html",
     "start": "NODE_ENV=production bun src/main.tsx",
     "build": "bun run build.ts",
-    "unit-test": "bun test src/test/*.test.ts"
+    "test": "bun test src/test/*.test.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.16",

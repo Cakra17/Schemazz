@@ -179,8 +179,10 @@ describe('NoobSQLParser - Parser/AST', () => {
       expect(asts[0].tableName).toBe('users');
       expect(asts[0].column.length).toBe(1);
       expect(asts[0].column[0].name).toBe('id');
-      expect(asts[0].column[0].dataType).toBe('INT');
-      expect(asts[0].column[0].constraint).toEqual([]);
+      expect(asts[0].column[0].type).toBe('INT');
+      expect(asts[0].column[0].unique).toEqual(false);
+      expect(asts[0].column[0].isFK).toEqual(false);
+      expect(asts[0].column[0].isPK).toEqual(false); 
       expect(asts[0].relation).toEqual([]);
     });
 
@@ -216,7 +218,7 @@ describe('NoobSQLParser - Parser/AST', () => {
       
       expect(asts[0].tableName).toBe('users');
       expect(asts[0].column[0].name).toBe('name');
-      expect(asts[0].column[0].dataType).toBe('VARCHAR(100)');
+      expect(asts[0].column[0].type).toBe('VARCHAR(100)');
     });
 
     test('should parse TEXT data type', () => {
@@ -225,7 +227,7 @@ describe('NoobSQLParser - Parser/AST', () => {
       parser.Parse();
       const asts = getASTs(parser);
       
-      expect(asts[0].column[0].dataType).toBe('TEXT');
+      expect(asts[0].column[0].type).toBe('TEXT');
     });
 
     test('should parse BOOLEAN data type', () => {
@@ -234,7 +236,7 @@ describe('NoobSQLParser - Parser/AST', () => {
       parser.Parse();
       const asts = getASTs(parser);
       
-      expect(asts[0].column[0].dataType).toBe('BOOLEAN');
+      expect(asts[0].column[0].type).toBe('BOOLEAN');
     });
   });
 
@@ -246,8 +248,8 @@ describe('NoobSQLParser - Parser/AST', () => {
       const asts = getASTs(parser);
       
       expect(asts[0].column[0].name).toBe('id');
-      expect(asts[0].column[0].dataType).toBe('INT');
-      expect(asts[0].column[0].constraint).toEqual(['PRIMARY KEY']);
+      expect(asts[0].column[0].type).toBe('INT');
+      expect(asts[0].column[0].isPK).toEqual(true);
     });
 
     test('should parse NOT NULL constraint', () => {
@@ -257,38 +259,30 @@ describe('NoobSQLParser - Parser/AST', () => {
       const asts = getASTs(parser);
       
       expect(asts[0].column[0].name).toBe('email');
-      expect(asts[0].column[0].dataType).toBe('VARCHAR(255)');
-      expect(asts[0].column[0].constraint).toEqual(['NOT NULL']);
-    });
-
-    test('should parse AUTO_INCREMENT constraint', () => {
-      const parser = new NoobSQLParser();
-      parser.SetSQLText('CREATE TABLE users (id INT AUTO_INCREMENT);');
-      parser.Parse();
-      const asts = getASTs(parser);
-      
-      expect(asts[0].column[0].constraint).toEqual(['AUTO_INCREMENT']);
+      expect(asts[0].column[0].type).toBe('VARCHAR(255)');
+      expect(asts[0].column[0].nullable).toEqual(false);
     });
 
     test('should parse multiple constraints on single column', () => {
       const parser = new NoobSQLParser();
-      parser.SetSQLText('CREATE TABLE users (id INT PRIMARY KEY AUTO_INCREMENT);');
+      parser.SetSQLText('CREATE TABLE users (id INT PRIMARY KEY NOT NULL);');
       parser.Parse();
       const asts = getASTs(parser);
       
-      expect(asts[0].column[0].constraint).toEqual(['PRIMARY KEY', 'AUTO_INCREMENT']);
+      expect(asts[0].column[0].isPK).toEqual(true);
+      expect(asts[0].column[0].nullable).toEqual(false);
     });
 
     test('should parse multiple columns with different constraints', () => {
       const parser = new NoobSQLParser();
-      parser.SetSQLText('CREATE TABLE products (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(100) NOT NULL, price INT);');
+      parser.SetSQLText('CREATE TABLE products (id INT PRIMARY KEY, name VARCHAR(100) NOT NULL, price INT NULL);');
       parser.Parse();
       const asts = getASTs(parser);
       
       expect(asts[0].column.length).toBe(3);
-      expect(asts[0].column[0].constraint).toEqual(['PRIMARY KEY', 'AUTO_INCREMENT']);
-      expect(asts[0].column[1].constraint).toEqual(['NOT NULL']);
-      expect(asts[0].column[2].constraint).toEqual([]);
+      expect(asts[0].column[0].isPK).toEqual(true);
+      expect(asts[0].column[1].nullable).toEqual(false);
+      expect(asts[0].column[2].nullable).toEqual(true);
     });
   });
 
@@ -312,26 +306,25 @@ describe('NoobSQLParser - Parser/AST', () => {
       expect(asts[0].column.length).toBe(6);
       
       expect(asts[0].column[0].name).toBe('id');
-      expect(asts[0].column[0].dataType).toBe('INT');
-      expect(asts[0].column[0].constraint).toEqual(['PRIMARY KEY', 'AUTO_INCREMENT']);
+      expect(asts[0].column[0].type).toBe('INT');
+      expect(asts[0].column[0].isPK).toEqual(true);
       
       expect(asts[0].column[1].name).toBe('username');
-      expect(asts[0].column[1].dataType).toBe('VARCHAR(50)');
-      expect(asts[0].column[1].constraint).toEqual(['NOT NULL']);
+      expect(asts[0].column[1].type).toBe('VARCHAR(50)');
+      expect(asts[0].column[1].nullable).toEqual(false);
       
       expect(asts[0].column[2].name).toBe('email');
-      expect(asts[0].column[2].dataType).toBe('VARCHAR(100)');
-      expect(asts[0].column[2].constraint).toEqual(['NOT NULL']);
+      expect(asts[0].column[2].type).toBe('VARCHAR(100)');
+      expect(asts[0].column[2].nullable).toEqual(false);
       
       expect(asts[0].column[3].name).toBe('age');
-      expect(asts[0].column[3].dataType).toBe('INT');
-      expect(asts[0].column[3].constraint).toEqual([]);
+      expect(asts[0].column[3].type).toBe('INT');
       
       expect(asts[0].column[4].name).toBe('bio');
-      expect(asts[0].column[4].dataType).toBe('TEXT');
+      expect(asts[0].column[4].type).toBe('TEXT');
       
       expect(asts[0].column[5].name).toBe('is_active');
-      expect(asts[0].column[5].dataType).toBe('BOOLEAN');
+      expect(asts[0].column[5].type).toBe('BOOLEAN');
     });
   });
 
@@ -352,10 +345,7 @@ describe('NoobSQLParser - Parser/AST', () => {
       expect(asts[0].column.length).toBe(2);
       expect(asts[0].relation.length).toBe(1);
       
-      const relationKey = Object.keys(asts[0].relation[0])[0];
-      expect(relationKey).toBe('fk_posts_users');
-      
-      const relation = asts[0].relation[0][relationKey as string];
+      const relation = asts[0].relation[0];
       expect(relation.from.tableName).toBe('posts');
       expect(relation.from.columnName).toBe('user_id');
       expect(relation.to.tableName).toBe('users');
@@ -380,17 +370,15 @@ describe('NoobSQLParser - Parser/AST', () => {
       expect(asts[0].column.length).toBe(3);
       expect(asts[0].relation.length).toBe(2);
       
-      const firstRelationKey = Object.keys(asts[0].relation[0])[0];
-      expect(firstRelationKey).toBe('fk_comments_posts');
-      const firstRelation = asts[0].relation[0][firstRelationKey as string];
+      const firstRelation = asts[0].relation[0];
       expect(firstRelation.from.columnName).toBe('post_id');
+      expect(firstRelation.from.tableName).toBe('comments');
       expect(firstRelation.to.tableName).toBe('posts');
       expect(firstRelation.to.columnName).toBe('id');
       
-      const secondRelationKey = Object.keys(asts[0].relation[1])[0];
-      expect(secondRelationKey).toBe('fk_comments_users');
-      const secondRelation = asts[0].relation[1][secondRelationKey as string];
+      const secondRelation = asts[0].relation[1];
       expect(secondRelation.from.columnName).toBe('user_id');
+      expect(secondRelation.from.tableName).toBe('comments');
       expect(secondRelation.to.tableName).toBe('users');
       expect(secondRelation.to.columnName).toBe('id');
     });
@@ -433,6 +421,12 @@ describe('NoobSQLParser - Parser/AST', () => {
       expect(asts[1].tableName).toBe('posts');
       expect(asts[1].column.length).toBe(3);
       expect(asts[1].relation.length).toBe(1);
+
+      const relation = asts[1].relation[0];
+      expect(relation.from.tableName).toBe('posts');
+      expect(relation.from.columnName).toBe('user_id');
+      expect(relation.to.columnName).toBe('id');
+      expect(relation.to.tableName).toBe('users');
     });
 
     test('should parse complex multi-table schema', () => {
@@ -473,10 +467,27 @@ describe('NoobSQLParser - Parser/AST', () => {
       expect(asts[1].tableName).toBe('posts');
       expect(asts[1].column.length).toBe(4);
       expect(asts[1].relation.length).toBe(1);
+
+      const postRelation = asts[1].relation[0];
+      expect(postRelation.from.tableName).toBe('posts');
+      expect(postRelation.from.columnName).toBe('user_id');
+      expect(postRelation.to.columnName).toBe('id');
+      expect(postRelation.to.tableName).toBe('users');
       
       expect(asts[2].tableName).toBe('comments');
       expect(asts[2].column.length).toBe(4);
       expect(asts[2].relation.length).toBe(2);
+      
+      const commentRelation = asts[2].relation;
+      expect(commentRelation[0].from.tableName).toBe('comments');
+      expect(commentRelation[0].from.columnName).toBe('post_id');
+      expect(commentRelation[0].to.columnName).toBe('id');
+      expect(commentRelation[0].to.tableName).toBe('posts');
+
+      expect(commentRelation[1].from.tableName).toBe('comments');
+      expect(commentRelation[1].from.columnName).toBe('user_id');
+      expect(commentRelation[1].to.columnName).toBe('id');
+      expect(commentRelation[1].to.tableName).toBe('users');
     });
   });
 
@@ -487,7 +498,7 @@ describe('NoobSQLParser - Parser/AST', () => {
       parser.Parse();
       const asts = getASTs(parser);
       
-      expect(asts[0].column[0].dataType).toBe('DATE');
+      expect(asts[0].column[0].type).toBe('DATE');
     });
 
     test('should parse table with multiple DATE columns', () => {
@@ -497,8 +508,8 @@ describe('NoobSQLParser - Parser/AST', () => {
       const asts = getASTs(parser);
       
       expect(asts[0].column.length).toBe(2);
-      expect(asts[0].column[0].dataType).toBe('DATE');
-      expect(asts[0].column[1].dataType).toBe('DATE');
+      expect(asts[0].column[0].type).toBe('DATE');
+      expect(asts[0].column[1].type).toBe('DATE');
     });
   });
 });
