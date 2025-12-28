@@ -30,8 +30,8 @@ export default function Hero() {
 					</div>
 				</div>
 			</section>
-			<section className="max-2-lg md:max-w-7xl mx-auto py-4">
-				<img src={hero} alt="example" className="rounded-lg shadow-xl"/>
+			<section className="max-w-2xl md:max-w-7xl mx-auto py-4">
+				<img loading="lazy" src={hero} alt="example" className="rounded-lg shadow-xl"/>
 			</section>
 		</main>
 	);
